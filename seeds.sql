@@ -20,9 +20,11 @@ SELECT * FROM roles;
 SELECT * FROM employees;
 
 
-SELECT employees.first_name, employees.last_name, roles.title,  managers.first_name AS manager 
+SELECT employees.first_name, employees.last_name, roles.title, departments.name AS department, roles.salary, CONCAT( managers.first_name, " ", managers.last_name) AS manager 
 FROM employees 
 JOIN employees AS managers ON employees.manager_id = managers.id
-JOIN departments ON employees.manager_id = departments.id;
+JOIN roles ON employees.role_id = roles.id
+JOIN departments ON roles.department_id = departments.id;
+
 
 -- WHERE managers.first_name = "Ron";

@@ -29,7 +29,7 @@ function promptMain() {
   const rEmp = "Remove Employee";
   const updateEmprole = "Update Employee Role";
   const updateEmpManager = "Update Employee Manager";
-  const viewAll = "view all roles";
+  const viewAll = "View All Roles";
   inquirer
     .prompt([
       {
@@ -80,11 +80,75 @@ function promptMain() {
 }
 
 function viewAllEmployees() {
-  connection.query("SELECT employees.first_name, employees.last_name, managers.first_name AS manager FROM employees JOIN employees AS managers ON employees.manager_id = managers.id", (err, res) => {
+  connection.query("SELECT employees.first_name, employees.last_name, roles.title, departments.name AS department, roles.salary, CONCAT( managers.first_name, ' ', managers.last_name) AS manager FROM employees JOIN employees AS managers ON employees.manager_id = managers.id JOIN roles ON employees.role_id = roles.id JOIN departments ON roles.department_id = departments.id", (err, res) => {
     if (err) {
       throw err;
     }
     console.table(res);
+    promptMain();
+  });
+}
+
+function viewAllEmployeesDepartment() {
+  connection.query("", (err, res) => {
+    if (err) {
+      throw err;
+    }
+    console.table(res);
+    const items = res.map((row) => {
+      return {
+        name: row.name,
+        value: row.id,
+      };
+    });
+    inquirer
+    .prompt([
+      {
+        type: "list",
+        name: "choice",
+        message: "What would you like to do?",
+        choices: [
+          allEmployees,
+          allEmpByDep,
+          allEmpbyManager,
+          addEmp,
+          rEmp,
+          updateEmprole,
+          updateEmpManager,
+          viewAll,
+          "EXIT",
+        ],
+      },
+    ])
+    .then((answers) => {
+      switch (answers.choice) {
+        case allEmployees:
+          viewAllEmployees();
+          break;
+        case allEmpByDep:
+          break;
+        case allEmpbyManager:
+          break;
+        case addEmp:
+          break;
+        case rEmp:
+          break;
+        case updateEmprole:
+          break;
+        case updateEmpManager:
+          break;
+        case viewAll:
+          break;
+        default:
+          connection.end();
+      }
+    })
+    .catch((error) => {
+      if (error.isTtyError) {
+        console.log("Something went wrong! Please try again.");
+      }
+    });
+
     promptMain();
   });
 }
