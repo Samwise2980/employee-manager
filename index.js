@@ -3,7 +3,7 @@
 
 const mysql = require("mysql");
 const inquirer = require("inquirer");
-const cTable = require('console.table');
+const cTable = require("console.table");
 
 const connection = mysql.createConnection({
   host: "localhost",
@@ -55,8 +55,10 @@ function promptMain() {
           viewAllEmployees();
           break;
         case allEmpByDep:
+          viewAllEmployeesDepartment();
           break;
         case allEmpbyManager:
+          viewAllEmployeesManager();
           break;
         case addEmp:
           break;
@@ -80,21 +82,23 @@ function promptMain() {
 }
 
 function viewAllEmployees() {
-  connection.query("SELECT employees.first_name, employees.last_name, roles.title, departments.name AS department, roles.salary, CONCAT( managers.first_name, ' ', managers.last_name) AS manager FROM employees JOIN employees AS managers ON employees.manager_id = managers.id JOIN roles ON employees.role_id = roles.id JOIN departments ON roles.department_id = departments.id", (err, res) => {
-    if (err) {
-      throw err;
+  connection.query(
+    "SELECT employees.first_name, employees.last_name, roles.title, departments.name AS department, roles.salary, CONCAT( managers.first_name, ' ', managers.last_name) AS manager FROM employees LEFT JOIN employees AS managers ON employees.manager_id = managers.id JOIN roles ON employees.role_id = roles.id JOIN departments ON roles.department_id = departments.id",
+    (err, res) => {
+      if (err) {
+        throw err;
+      }
+      console.table(res);
+      promptMain();
     }
-    console.table(res);
-    promptMain();
-  });
+  );
 }
 
 function viewAllEmployeesDepartment() {
-  connection.query("", (err, res) => {
+  connection.query("SELECT * FROM departments", (err, res) => {
     if (err) {
       throw err;
     }
-    console.table(res);
     const items = res.map((row) => {
       return {
         name: row.name,
@@ -106,102 +110,65 @@ function viewAllEmployeesDepartment() {
       {
         type: "list",
         name: "choice",
-        message: "What would you like to do?",
-        choices: [
-          allEmployees,
-          allEmpByDep,
-          allEmpbyManager,
-          addEmp,
-          rEmp,
-          updateEmprole,
-          updateEmpManager,
-          viewAll,
-          "EXIT",
-        ],
-      },
-    ])
-    .then((answers) => {
-      switch (answers.choice) {
-        case allEmployees:
-          viewAllEmployees();
-          break;
-        case allEmpByDep:
-          break;
-        case allEmpbyManager:
-          break;
-        case addEmp:
-          break;
-        case rEmp:
-          break;
-        case updateEmprole:
-          break;
-        case updateEmpManager:
-          break;
-        case viewAll:
-          break;
-        default:
-          connection.end();
-      }
-    })
-    .catch((error) => {
-      if (error.isTtyError) {
-        console.log("Something went wrong! Please try again.");
-      }
-    });
-
-    promptMain();
-  });
-}
-
-function postPrompt() {
-  inquirer
-    .prompt([
-      {
-        type: "input",
-        name: "first",
-        message: "What is the employees first name?",
-      },
-      {
-        type: "input",
-        name: "last",
-        message: "What is the employees last name?",
-      },
-      {
-        type: "list",
-        name: "role",
-        message: "What is the employees role?",
-        choices: ["Fighter", "Ranger", "Wizard"],
-      },
-      {
-        type: "list",
-        name: "manager",
-        message: "Who is the employees manager?",
-        choices: ["",],
+        message: "Which department would you like to see?",
+        choices: items,
       },
     ])
     .then((answers) => {
       connection.query(
-        "INSERT INTO products SET ?",
-        {
-          name: answers.first,
-          category: answers.last,
-          starting_bid: answers.bidAmount,
-          current_bid: answers.bidAmount,
-        },
+        "SELECT employees.first_name, employees.last_name, roles.title, departments.name AS department, roles.salary, CONCAT( managers.first_name, ' ', managers.last_name) AS manager FROM employees LEFT JOIN employees AS managers ON employees.manager_id = managers.id JOIN roles ON employees.role_id = roles.id JOIN departments ON roles.department_id = departments.id WHERE departments.id = ?",
+        [answers.choice],
         (err, res) => {
           if (err) {
             throw err;
           }
-          promptAction();
-        }
-      );    })
+          console.table(res);
+          promptMain();
+    })})
     .catch((error) => {
       if (error.isTtyError) {
         console.log("Something went wrong! Please try again.");
       }
     });
+  });
 }
 
+function viewAllEmployeesManager() {
+  connection.query("SELECT managers.id, CONCAT( managers.first_name, ' ', managers.last_name) AS manager FROM employees LEFT JOIN employees AS managers ON employees.manager_id = managers.id WHERE managers.id = employees.manager_id GROUP BY managers.id;", (err, res) => {
+    if (err) {
+      throw err;
+    }
+    const items = res.map((row) => {
+      return {
+        name: row.manager,
+        value: row.id,
+      };
+    });
+    inquirer
+    .prompt([
+      {
+        type: "list",
+        name: "choice",
+        message: "Which Manager would you like to find?",
+        choices: items,
+      },
+    ])
+    .then((answers) => {
+      connection.query(
+        "SELECT employees.first_name, employees.last_name, roles.title, departments.name AS department, roles.salary, CONCAT( managers.first_name, ' ', managers.last_name) AS manager FROM employees LEFT JOIN employees AS managers ON employees.manager_id = managers.id JOIN roles ON employees.role_id = roles.id JOIN departments ON roles.department_id = departments.id WHERE managers.id = ?;", [answers.choice], (err, res) => {
+          if (err) {
+            throw err;
+          }
+          console.table(res);
+          promptMain();
+    })})
+    .catch((error) => {
+      if (error.isTtyError) {
+        console.log("Something went wrong! Please try again.");
+      }
+    });
+  });
+}
 
 function asciiArt() {
   console.log(`
