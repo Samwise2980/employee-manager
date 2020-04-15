@@ -26,9 +26,10 @@ function promptMain() {
   const rEmp = "Remove Employee";
   const updateEmprole = "Update Employee Role";
   const updateEmpManager = "Update Employee Manager";
-  const viewRoles = "View All Roles";
   const viewDepartments = "View All Departments";
-  const addRole = "Add New Role"
+  const viewRoles = "View All Roles";
+  const addDepartment = "Add New Department"
+  const addRole = "Add New Role";
 
   inquirer
     .prompt([
@@ -44,8 +45,9 @@ function promptMain() {
           rEmp,
           updateEmprole,
           updateEmpManager,
-          viewRoles,
           viewDepartments,
+          viewRoles,
+          addDepartment,
           addRole,
           "EXIT",
         ],
@@ -74,11 +76,14 @@ function promptMain() {
         case updateEmpManager:
           updateEmployeeManager();
           break;
+        case viewDepartments:
+          viewAllDepartments();
+          break;
         case viewRoles:
           viewAllRoles();
           break;
-        case viewDepartments:
-          viewAllDepartments();
+        case addDepartment:
+          addNewDepartment();
           break;
         case addRole:
           addNewRole();
@@ -486,17 +491,17 @@ function addNewRole() {
         {
           type: "input",
           name: "title",
-          message: "Which department would you like to see?",
+          message: "What is the new roles title?",
         },
         {
           type: "input",
           name: "salary",
-          message: "Which department would you like to see?",
+          message: "How much will they make?",
         },
         {
-          type: "choice",
+          type: "list",
           name: "department_id",
-          message: "Which department would you like to see?",
+          message: "Which department does it belong to.?",
           choices: departments,
         },
       ])
@@ -518,4 +523,32 @@ function addNewRole() {
         }
       });
   });
+}
+
+function addNewDepartment() {
+  inquirer
+    .prompt([
+      {
+        type: "input",
+        name: "name",
+        message: "What is the new departments name",
+      },
+    ])
+    .then((answers) => {
+      connection.query(
+        "INSERT INTO departments (name) VALUES (?)",
+        [answers.name],
+        (err, res) => {
+          if (err) {
+            throw err;
+          }
+          promptMain();
+        }
+      );
+    })
+    .catch((error) => {
+      if (error.isTtyError) {
+        console.log("Something went wrong! Please try again.");
+      }
+    });
 }
