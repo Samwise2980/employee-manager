@@ -8,6 +8,9 @@ GitHub Repo: https://github.com/Samwise2980/employee-tracker
 
 A command-line application that allows users to view and update employee information.
 
+![demo gif](./assets/images/cli-demo.gif)
+
+
 ## Table of Contents
 
 - [Usage](#usage)
@@ -16,7 +19,17 @@ A command-line application that allows users to view and update employee informa
 
 ## Usage
 
-
+* View all employees on record
+* View all employees by department
+* View all employes by roles
+* Add new employees
+* Remove employees
+* Update employee roles
+* Update employee manager
+* View all departments
+* View all roles
+* Add new departments
+* Add new roles
 
 ## Tests
 
