@@ -429,8 +429,6 @@ function updateEmployeeManager() {
                 },
               ])
               .then((answers) => {
-                console.log(answers);
-
                 connection.query(
                   "UPDATE officedb.employees SET manager_id = ? WHERE id = ?;",
                   [answers.managerSelect, answers.employeeSelect],
