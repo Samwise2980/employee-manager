@@ -27,6 +27,9 @@ function promptMain() {
   const updateEmprole = "Update Employee Role";
   const updateEmpManager = "Update Employee Manager";
   const viewRoles = "View All Roles";
+  const viewDepartments = "View All Departments";
+  const addRole = "Add New Role"
+
   inquirer
     .prompt([
       {
@@ -42,6 +45,8 @@ function promptMain() {
           updateEmprole,
           updateEmpManager,
           viewRoles,
+          viewDepartments,
+          addRole,
           "EXIT",
         ],
       },
@@ -71,6 +76,12 @@ function promptMain() {
           break;
         case viewRoles:
           viewAllRoles();
+          break;
+        case viewDepartments:
+          viewAllDepartments();
+          break;
+        case addRole:
+          addNewRole();
           break;
         default:
           connection.end();
@@ -247,7 +258,12 @@ function addEmployee() {
             .then((answers) => {
               connection.query(
                 "INSERT INTO employees (first_name, last_name, role_id, manager_id) VALUES ( ?, ?, ?, ?)",
-                [answers.first, answers.last, answers.roleSelect, answers.mangerSelect],
+                [
+                  answers.first,
+                  answers.last,
+                  answers.roleSelect,
+                  answers.mangerSelect,
+                ],
                 (err, res) => {
                   if (err) {
                     throw err;
@@ -441,5 +457,65 @@ function viewAllRoles() {
     }
     console.table(res);
     promptMain();
+  });
+}
+
+function viewAllDepartments() {
+  connection.query("SELECT * FROM departments", (err, res) => {
+    if (err) {
+      throw err;
+    }
+    console.table(res);
+    promptMain();
+  });
+}
+
+function addNewRole() {
+  connection.query("SELECT * FROM departments", (err, res) => {
+    if (err) {
+      throw err;
+    }
+    const departments = res.map((row) => {
+      return {
+        name: row.name,
+        value: row.id,
+      };
+    });
+    inquirer
+      .prompt([
+        {
+          type: "input",
+          name: "title",
+          message: "Which department would you like to see?",
+        },
+        {
+          type: "input",
+          name: "salary",
+          message: "Which department would you like to see?",
+        },
+        {
+          type: "choice",
+          name: "department_id",
+          message: "Which department would you like to see?",
+          choices: departments,
+        },
+      ])
+      .then((answers) => {
+        connection.query(
+          "INSERT INTO roles (title, salary, department_id) VALUES ( ?, ?, ?)",
+          [answers.title, answers.salary, answers.department_id],
+          (err, res) => {
+            if (err) {
+              throw err;
+            }
+            promptMain();
+          }
+        );
+      })
+      .catch((error) => {
+        if (error.isTtyError) {
+          console.log("Something went wrong! Please try again.");
+        }
+      });
   });
 }
